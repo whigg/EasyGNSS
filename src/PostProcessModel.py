@@ -14,8 +14,17 @@ import numpy as np
 
 class PostProcessModel:
     
-    def launchConvbinCommand(self, ubxFile):
+    def launchCONVBINCommand(self, ubxFile):
         os.system("convbin -d ../rinex ../ubx/" + ubxFile)
+        
+
+    def launchRNX2RTKPCommand(self, confFile, outFile, roverObsFile, baseObsFile, lst_navFile, orbitesFile):
+        cmd = "rnx2rtkp -k " + confFile + " -o " + outFile + " " + roverObsFile + " " + baseObsFile + " "
+        for navFile in lst_navFile:
+            cmd += navFile + " "
+        cmd += orbitesFile
+        
+        os.system(cmd)
     
     """
     Is used to download a file from a ftp server. Assumes that the receiver is connected to the Internet.
@@ -224,7 +233,9 @@ if __name__ == "__main__":
     #postPross.downloadCoord("http://rgp.ign.fr/STATIONS/coordRGP.php", "coordRGP.txt", "../download/")
     #print(postPross.distance(0, 0, 90,0))
     #print(postPross.nearestStationsDMS(2.5872222222222225, 48.840833333333336, 10, "../download/coordRGP.txt", 4, 5, 31, 3))
-    #postPross.launchConvbinCommand("2019-0217-230342.ubx")
+    #postPross.launchCONVBINCommand("2019-0217-230342.ubx")
     
-    postPross.downloadFTPIGS("pub/igs/products/2049/", "igv20491_00.sp3.Z", "../download/")
+    #postPross.downloadFTPIGS("pub/igs/products/2049/", "igv20491_00.sp3.Z", "../download/")
+    
+    #postPross.launchRNX2RTKPCommand("../conf/test.conf", "../post_processing/test.pos", "../rinex/mobile.o", "../rinex/ct10069z.17o", ["../rinex/ct10069z.17n"], "../download/igs19395.sp3")
     
