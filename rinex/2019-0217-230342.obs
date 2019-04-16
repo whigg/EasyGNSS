@@ -1,5 +1,5 @@
      2.11           OBSERVATION DATA    M (MIXED)           RINEX VERSION / TYPE
-CONVBIN 2.4.3                           20190410 150005 UTC PGM / RUN BY / DATE 
+CONVBIN 2.4.3                           20190416 101342 UTC PGM / RUN BY / DATE 
 log: ../ubx/2019-0217-230342.ubx                            COMMENT             
 format: u-blox                                              COMMENT             
                                                             MARKER NAME         
@@ -7,8 +7,8 @@ format: u-blox                                              COMMENT
                                                             OBSERVER / AGENCY   
                                                             REC # / TYPE / VERS 
                                                             ANT # / TYPE        
-        0.0000        0.0000        0.0000                  APPROX POSITION XYZ 
-        0.0000        0.0000        0.0000                  ANTENNA: DELTA H/E/N
+  4207670.7273   153730.1255  4775103.0232                  APPROX POSITION XYZ 
+        1.0000        2.0000        3.0000                  ANTENNA: DELTA H/E/N
      1     1                                                WAVELENGTH FACT L1/2
      4    C1    L1    C2    L2                              # / TYPES OF OBSERV 
   2019     2    18    11    49   48.9910000     GPS         TIME OF FIRST OBS   

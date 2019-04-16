@@ -12,19 +12,80 @@ import requests as r #library used to do Internet requests
 #import vincenty as v #library used to compute distance with geographic coordinates
 import numpy as np
 
+deg2rad = np.pi / 180
+rad2deg = 1 / deg2rad
+
 class PostProcessModel:
     
-    def launchCONVBINCommand(self, ubxFile):
-        os.system("convbin -d ../rinex ../ubx/" + ubxFile)
+    """
+    Is used to launch a CONVBIN command-line to convert from a .ubx file to rinex files.
+    
+    The rinex files are created in the directory called rinex. They have the same name as the 
+    .ubx file but with a different extensions (.obs, .nav, ...). See RTKlib documentation for
+    further information.
+    
+    Parameters:
+        Mandatory:
+            ubxFile (str): path of the .ubx file
+            posFile (str): path of the last positionning file processed with RTKRCV
+            hAnt (float): height of the antenna in relation to the ground
+            toDownload (str): name of the file to download
+    """
+    def launchCONVBINCommand(self, ubxFile, posFile, hAnt):
+        file = open(posFile, "r") #opening the position file
+        lines = file.readlines() #retrieving all the lines
+        file.close()
+        cpt = 0 #number of commentary lines
+        for line in lines:
+            if line[0] == "%": #commentary line
+                cpt += 1
+        data = np.genfromtxt(posFile, skip_header=cpt) #creating a numpy array
+        
+        line = lines[cpt - 1] #retrieving the last commentary line
+        if data.size == data.shape[0]: #one position line
+            if "x-ecef(m)" in line: #cartesian coordinates
+                x = data[2]
+                y = data[3]
+                z = data[4]
+            else: #geographic coordinates
+                lat = data[2]
+                lng = data[3]
+                h = data[4]
+                x, y, z = self.geographic2cartesian(lat, lng, h)
+        else: #many position lines
+            if "x-ecef(m)" in line: #cartesian coordinates
+                x = data[0, 2]
+                y = data[0, 3]
+                z = data[0, 4]
+            else: #geographic coordinates
+                lat = data[0, 2]
+                lng = data[0, 3]
+                h = data[0, 4]
+                x, y, z = self.geographic2cartesian(lat, lng, h)
+        
+        #launch command-line
+        os.system("convbin -hp " + str(x) + "/" + str(y) + "/" + str(z) + " -hd " + str(hAnt) + "/0/0 -d ../rinex ../ubx/" + ubxFile)
         
 
+    """
+    Is used to launch a RNX2RTKP command-line to do post-processing.
+    
+    Parameters:
+        Mandatory:
+            confFile (str): path of a RTKlib configuration file
+            outFile (str): path of the out file where the solution will be saved
+            roverObsFile (str): path of the rover observation file
+            baseObsFile (str): path of the base observation file
+            lst_navFile (list): list of paths of navigation files
+            orbitesFile (str): path of an orbites file 
+    """
     def launchRNX2RTKPCommand(self, confFile, outFile, roverObsFile, baseObsFile, lst_navFile, orbitesFile):
         cmd = "rnx2rtkp -k " + confFile + " -o " + outFile + " " + roverObsFile + " " + baseObsFile + " "
         for navFile in lst_navFile:
             cmd += navFile + " "
         cmd += orbitesFile
         
-        os.system(cmd)
+        os.system(cmd) #command-line to do post-processing
     
     """
     Is used to download a file from a ftp server. Assumes that the receiver is connected to the Internet.
@@ -219,7 +280,38 @@ class PostProcessModel:
         ret = symbol * (dd + mm/60 + ss/3600)
         
         return ret
+    
+    
+    """
+    Is used to go from geographic coordinates in WGS84 to cartesian coordinates in WGS84.
+    Parameters:
+        Mandatory:
+            lat (float): latitude 
+            lng (float): longitude
+            h (float): height above the WGS84 ellipsoid
+            
+    Return:
+        X (float): X coordinate
+        Y (float): Y coordinate
+        Z (float): Z coordinate
+    """
+    def geographic2cartesian(self, lat, lng, h):
+        a = 6378137 #semi-major axis of the WGS84 ellipsoid
+        f = 1 / 298.257223563 #flattening 
+        b = a - a*f #minor semi-axis
+        e2 = (a*a - b*b) / (a*a) # exentricity
         
+        lat *= deg2rad #from degree to radian
+        lng *= deg2rad
+        
+        w = np.sqrt( 1 - e2 * np.sin(lat) ** 2 ) 
+        N = a / w 
+        
+        X = (N + h) * np.cos(lng) * np.cos(lat)
+        Y = (N + h) * np.sin(lng) * np.cos(lat)
+        Z = (N * (1-e2) + h) * np.sin(lat)
+        
+        return X, Y, Z
         
 if __name__ == "__main__":
     postPross = PostProcessModel()
@@ -233,9 +325,9 @@ if __name__ == "__main__":
     #postPross.downloadCoord("http://rgp.ign.fr/STATIONS/coordRGP.php", "coordRGP.txt", "../download/")
     #print(postPross.distance(0, 0, 90,0))
     #print(postPross.nearestStationsDMS(2.5872222222222225, 48.840833333333336, 10, "../download/coordRGP.txt", 4, 5, 31, 3))
-    #postPross.launchCONVBINCommand("2019-0217-230342.ubx")
+    #postPross.launchCONVBINCommand("2019-0217-230342.ubx", "../pos/P1_RGP1.pos", 1)
+    #postPross.launchCONVBINCommand("2019-0217-230342.ubx", "../pos/mobile.pos", 1)
     
     #postPross.downloadFTPIGS("pub/igs/products/2049/", "igv20491_00.sp3.Z", "../download/")
     
     #postPross.launchRNX2RTKPCommand("../conf/test.conf", "../post_processing/test.pos", "../rinex/mobile.o", "../rinex/ct10069z.17o", ["../rinex/ct10069z.17n"], "../download/igs19395.sp3")
-    
