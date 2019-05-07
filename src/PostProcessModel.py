@@ -11,6 +11,8 @@ import os #library used to interact with the operating system
 import requests as r #library used to do Internet requests
 #import vincenty as v #library used to compute distance with geographic coordinates
 import numpy as np
+import glob
+import datetime
 
 deg2rad = np.pi / 180
 rad2deg = 1 / deg2rad
@@ -28,10 +30,13 @@ class PostProcessModel:
         Mandatory:
             ubxFile (str): path of the .ubx file
             posFile (str): path of the last positionning file processed with RTKRCV
-            hAnt (float): height of the antenna in relation to the ground
-            toDownload (str): name of the file to download
+            
+    Return:
+        lat (float): latitude of the receiver
+        lng (float): longitude of the receiver
+        h (float): height above the WGS84 ellipsoid of the receiver  
     """
-    def launchCONVBINCommand(self, ubxFile, posFile, hAnt):
+    def launchCONVBINCommand(self, ubxFile, posFile):
         file = open(posFile, "r") #opening the position file
         lines = file.readlines() #retrieving all the lines
         file.close()
@@ -39,6 +44,9 @@ class PostProcessModel:
         for line in lines:
             if line[0] == "%": #commentary line
                 cpt += 1
+                if "antenna1" in line:
+                    hAnt = int(line[-8:-2]) #height of the antenna in relation to the ground 
+                
         data = np.genfromtxt(posFile, skip_header=cpt) #creating a numpy array
         
         line = lines[cpt - 1] #retrieving the last commentary line
@@ -47,6 +55,7 @@ class PostProcessModel:
                 x = data[2]
                 y = data[3]
                 z = data[4]
+                lng, lat, h = self.cartesian2geographic(x, y, z)
             else: #geographic coordinates
                 lat = data[2]
                 lng = data[3]
@@ -57,6 +66,7 @@ class PostProcessModel:
                 x = data[0, 2]
                 y = data[0, 3]
                 z = data[0, 4]
+                lng, lat, h = self.cartesian2geographic(x, y, z)
             else: #geographic coordinates
                 lat = data[0, 2]
                 lng = data[0, 3]
@@ -65,6 +75,8 @@ class PostProcessModel:
         
         #launch command-line
         os.system("convbin -hp " + str(x) + "/" + str(y) + "/" + str(z) + " -hd " + str(hAnt) + "/0/0 -d ../rinex ../ubx/" + ubxFile)
+        
+        return lat, lng, h
         
 
     """
@@ -225,7 +237,6 @@ class PostProcessModel:
         Mandatory:
             receiverLng (float): longitude of the receiver (at dd format)
             receiverLat (float): latitude of the receiver (at dd format)
-            nbLim (int): number of stations that want
             coord (str): path of the file with the coordinates of the permanent GNSS stations
             idLat (int): number of column where latitude is in the coordinates file
             idLng (int): number of column where longitude is in the coordinates file
@@ -234,9 +245,9 @@ class PostProcessModel:
         
     Return:
         noun (list): noun of the nearest stations
-        dist (list): distance between the receiver and the nearest stations (in meters)
+        dist (list): distance between the receiver and the nearest stations (in kilometers)
     """
-    def nearestStationsDMS(self, receiverLng, receiverLat, nbLim, coord, idLat, idLng, header, footer):
+    def nearestStationsDMS(self, receiverLng, receiverLat, coord, idLat, idLng, header, footer):
         listStations = np.genfromtxt(coord, dtype=np.str, skip_header=header, skip_footer=footer)
         lat = listStations[:, idLat]
         lng = listStations[:, idLng]
@@ -250,9 +261,9 @@ class PostProcessModel:
         
         index = np.argsort(lst_dist)
         
-        for i in range(nbLim):
+        for i in range(nbStations):
             noun.append(listStations[index[i], 0])
-            dist.append(lst_dist[index[i]] * 1000)
+            dist.append(lst_dist[index[i]])
             
         return noun, dist
     
@@ -312,6 +323,87 @@ class PostProcessModel:
         Z = (N * (1-e2) + h) * np.sin(lat)
         
         return X, Y, Z
+    
+    
+    """
+    Is used to go from cartesian coordinates in WGS84 to geographic coordinates in WGS84.
+    Parameters:
+        Mandatory:
+            X (float): X coordinate
+            Y (float): Y coordinate
+            Z (float): Z coordinate        
+            
+    Return:
+        lat (float): latitude 
+        lng (float): longitude
+        h (float): height above the WGS84 ellipsoid        
+
+    """
+    def cartesian2geographic(self, X, Y, Z):
+        a = 6378137 #semi-major axis of the WGS84 ellipsoid
+        f = 1 / 298.257223563 #flattening 
+        b = a - a*f #minor semi-axis
+        e2 = (a*a - b*b) / (a*a) #exentricity
+        
+        r = np.sqrt(X**2 + Y**2 + Z**2)
+        mu = np.arctan(Z * (1-f + a*e2/r) / np.sqrt(X**2 + Y**2))
+
+        lng = np.arctan(Y/X)
+        lat = np.arctan((Z*(1-f) + e2*a*np.sin(mu)**3) / ((1-f)*(np.sqrt(X**2 + Y**2) - e2*a*np.cos(mu)**3)))
+        h = np.sqrt(X**2 + Y**2) * np.cos(lat) + Z*np.sin(lat) - a*np.sqrt(1 - e2*np.sin(lat)**2)
+    
+        return lng, lat, h
+    
+    
+    def launchPostProcessing(self, confFile, choosing_mode, stat_max, dist_max):
+        #retrieve last .ubx file
+        lst_ubxFiles = glob.glob("../ubx/*")
+        lst_ubxFiles.sort()
+        last_ubxFile = lst_ubxFiles[-1]
+
+        #retrieve last .pos file
+        lst_posFiles = glob.glob("../pos/*") 
+        lst_posFiles.sort()
+        last_posFile = lst_posFiles[-1]  
+        
+        #converting from .ubx file to rinex files
+        #lat, lng, h = self.launchCONVBINCommand(last_ubxFile, last_posFile)
+        
+        #downloading coordinates of the RGP stations
+        #self.downloadCoord("http://rgp.ign.fr/STATIONS/coordRGP.php", "coordRGP.txt", "../download/")
+        
+        #retrieving the nearest stations
+#        stat_noun, stat_dist = self.nearestStationsDMS(lng, lat, "../download/coordRGP.txt", 4, 5, 31, 3)
+#        
+#        if choosing_mode == 0: #user choose the stations
+#            pass
+#        else: #user do not choose the stations
+#            stat_noun = stat_noun[:stat_max]
+#            stat_dist = stat_dist[:stat_max]
+#            new_stat_noun = []
+#            new_stat_dist = []
+#            
+#            for i in range(len(stat_noun)):
+#                if stat_dist[i] <= dist_max:
+#                    new_stat_noun.append(stat_noun[i])
+#                    new_stat_dist.append(stat_dist[i])
+#                    
+#            stat_noun = new_stat_noun
+#            stat_dist = new_stat_dist
+            
+        #downloading observation and navigation files of the choosen RGP stations
+        dateTime = last_ubxFile[-23:-4]
+        lst_dateTime = dateTime.split("_")
+        date = lst_dateTime[0]
+        lst_date = date.split("-")
+        year = int(lst_date[0])
+        mounth = int(lst_date[1])
+        day = int(lst_date[2])
+        DATE = datetime.datetime(year, mounth, day)
+        dateTuple = DATE.timetuple()
+        yDay = dateTuple.tm_yday
+        
+        print(yDay)
         
 if __name__ == "__main__":
     postPross = PostProcessModel()
@@ -331,3 +423,5 @@ if __name__ == "__main__":
     #postPross.downloadFTPIGS("pub/igs/products/2049/", "igv20491_00.sp3.Z", "../download/")
     
     #postPross.launchRNX2RTKPCommand("../conf/test.conf", "../post_processing/test.pos", "../rinex/mobile.o", "../rinex/ct10069z.17o", ["../rinex/ct10069z.17n"], "../download/igs19395.sp3")
+    
+    postPross.launchPostProcessing("test.conf", 1, 3, 100)
