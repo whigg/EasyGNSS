@@ -13,6 +13,7 @@ import requests as r #library used to do Internet requests
 import numpy as np
 import glob
 import datetime
+import vincenty as v
 
 deg2rad = np.pi / 180
 rad2deg = 1 / deg2rad
@@ -45,7 +46,7 @@ class PostProcessModel:
             if line[0] == "%": #commentary line
                 cpt += 1
                 if "antenna1" in line:
-                    hAnt = int(line[-8:-2]) #height of the antenna in relation to the ground 
+                    hAnt = float(line[-8:-2]) #height of the antenna in relation to the ground 
                 
         data = np.genfromtxt(posFile, skip_header=cpt) #creating a numpy array
         
@@ -217,10 +218,10 @@ class PostProcessModel:
     
     Parameters:
         Mandatory:
-            receiverLng (float): longitude of the receiver (at dd format)
-            receiverLat (float): latitude of the receiver (at dd format)
-            stationLng (float): longitude of the station (at dd format)
-            stationLat (float): latitude of the station (at dd format)
+            receiverLng (float): longitude of the receiver (at decimal degree format)
+            receiverLat (float): latitude of the receiver (at decimal degree format)
+            stationLng (float): longitude of the station (at decimal degree format)
+            stationLat (float): latitude of the station (at decimal degree format)
             
     Return:
         dist (float): distance between the receiver and the station
@@ -367,43 +368,78 @@ class PostProcessModel:
         last_posFile = lst_posFiles[-1]  
         
         #converting from .ubx file to rinex files
-        #lat, lng, h = self.launchCONVBINCommand(last_ubxFile, last_posFile)
+        lat, lng, h = self.launchCONVBINCommand(last_ubxFile, last_posFile)
         
         #downloading coordinates of the RGP stations
-        #self.downloadCoord("http://rgp.ign.fr/STATIONS/coordRGP.php", "coordRGP.txt", "../download/")
+        self.downloadCoord("http://rgp.ign.fr/STATIONS/coordRGP.php", "coordRGP.txt", "../download/")
         
         #retrieving the nearest stations
-#        stat_noun, stat_dist = self.nearestStationsDMS(lng, lat, "../download/coordRGP.txt", 4, 5, 31, 3)
-#        
-#        if choosing_mode == 0: #user choose the stations
-#            pass
-#        else: #user do not choose the stations
-#            stat_noun = stat_noun[:stat_max]
-#            stat_dist = stat_dist[:stat_max]
-#            new_stat_noun = []
-#            new_stat_dist = []
-#            
-#            for i in range(len(stat_noun)):
-#                if stat_dist[i] <= dist_max:
-#                    new_stat_noun.append(stat_noun[i])
-#                    new_stat_dist.append(stat_dist[i])
-#                    
-#            stat_noun = new_stat_noun
-#            stat_dist = new_stat_dist
+        stat_noun, stat_dist = self.nearestStationsDMS(lng, lat, "../download/coordRGP.txt", 4, 5, 31, 3)
+        
+        if choosing_mode == 0: #user choose the stations
+            pass
+        else: #user do not choose the stations
+            stat_noun = stat_noun[:stat_max]
+            stat_dist = stat_dist[:stat_max]
+            new_stat_noun = []
+            new_stat_dist = []
+            
+            for i in range(len(stat_noun)):
+                if stat_dist[i] <= dist_max:
+                    new_stat_noun.append(stat_noun[i])
+                    new_stat_dist.append(stat_dist[i])
+                    
+            stat_noun = new_stat_noun
+            stat_dist = new_stat_dist
             
         #downloading observation and navigation files of the choosen RGP stations
+        
         dateTime = last_ubxFile[-23:-4]
         lst_dateTime = dateTime.split("_")
+        
+#        time = lst_dateTime[1]
+#        lst_time = time.split("-")
+#        hour_start = int(lst_time[0])
+        
         date = lst_dateTime[0]
         lst_date = date.split("-")
         year = int(lst_date[0])
         mounth = int(lst_date[1])
         day = int(lst_date[2])
+        
         DATE = datetime.datetime(year, mounth, day)
         dateTuple = DATE.timetuple()
         yDay = dateTuple.tm_yday
         
-        print(yDay)
+        #retrieve last rinex obs file
+        lst_rinexFiles = glob.glob("../rinex/*") 
+        lst_rinexFiles.sort()
+        last_rinexFile = lst_rinexFiles[-1]
+        
+        #reading last rinex obs file
+        file = open(last_rinexFile, "r")
+        lines = file.readlines()
+        file.close()
+        for line in lines:
+            if  "TIME OF LAST OBS" in line:
+                hour_end = int(line[22:24])
+            elif  "TIME OF FIRST OBS" in line:
+                hour_start = int(line[22:24])
+                
+        if len(str(yDay)) == 1:
+            yDay = "00" + str(yDay)
+        elif len(str(yDay)) == 2:
+            yDay = "0" + str(yDay)
+        path = "pub/data/" + str(year) + "/" + yDay + "/data_1"
+            
+        for station in stat_noun:    
+            for hour in range(hour_start, hour_end + 1):
+              toDownload = station.lower() + str(yDay) + chr(hour + 97) + "." + str(year)[2:4] + "d.Z"
+              #self.downloadFTPIGN(path, toDownload, "../download/")
+              #self.uncompress("../download/" + toDownload)
+              self.uncompressHatanaka("../download/" + toDownload[:-2])
+             
+        
         
 if __name__ == "__main__":
     postPross = PostProcessModel()
