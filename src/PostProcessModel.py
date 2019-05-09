@@ -213,6 +213,10 @@ class PostProcessModel:
         os.system("../lib/CRX2RNX " + dFile) #command-line to process the uncompression with CRX2RNX
         
         
+    def delete(self, file):
+        os.system("rm " + file)
+        
+        
     """
     Is used to compute distance with geographic coordinates with Vincenty method.
     
@@ -438,8 +442,17 @@ class PostProcessModel:
               #self.downloadFTPIGN(path, toDownload, "../download/")
               #self.uncompress("../download/" + toDownload)
               self.uncompressHatanaka("../download/" + toDownload[:-2])
-             
-        
+              self.delete("../download/" + toDownload[:-2])
+            
+            
+    def concatenateRinex(lstRinex):
+        firstRinex = lstRinex[0]
+        lstRinex.pop(0)
+        firstFile = open(firstRinex, "a")
+        lstLines = []
+        for rinex in lstRinex:
+            pass
+            
         
 if __name__ == "__main__":
     postPross = PostProcessModel()
