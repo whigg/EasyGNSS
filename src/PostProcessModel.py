@@ -75,7 +75,7 @@ class PostProcessModel:
                 x, y, z = self.geographic2cartesian(lat, lng, h)
         
         #launch command-line
-        os.system("convbin -hp " + str(x) + "/" + str(y) + "/" + str(z) + " -hd " + str(hAnt) + "/0/0 -d ../rinex ../ubx/" + ubxFile)
+        os.system("convbin -hp " + str(x) + "/" + str(y) + "/" + str(z) + " -hd " + str(hAnt) + "/0/0 -d ../rinex ../Results/Logs/" + ubxFile)
         
         return lat, lng, h
         
@@ -357,17 +357,17 @@ class PostProcessModel:
         lat = np.arctan((Z*(1-f) + e2*a*np.sin(mu)**3) / ((1-f)*(np.sqrt(X**2 + Y**2) - e2*a*np.cos(mu)**3)))
         h = np.sqrt(X**2 + Y**2) * np.cos(lat) + Z*np.sin(lat) - a*np.sqrt(1 - e2*np.sin(lat)**2)
     
-        return lng, lat, h
+        return lng*rad2deg, lat*rad2deg, h
     
     
     def launchPostProcessing(self, confFile, choosing_mode, stat_max, dist_max):
         #retrieve last .ubx file
-        lst_ubxFiles = glob.glob("../ubx/*")
+        lst_ubxFiles = glob.glob("../Results/Logs/*")
         lst_ubxFiles.sort()
         last_ubxFile = lst_ubxFiles[-1]
 
         #retrieve last .pos file
-        lst_posFiles = glob.glob("../pos/*") 
+        lst_posFiles = glob.glob("../Results/Solutions/*") 
         lst_posFiles.sort()
         last_posFile = lst_posFiles[-1]  
         
@@ -434,24 +434,57 @@ class PostProcessModel:
             yDay = "00" + str(yDay)
         elif len(str(yDay)) == 2:
             yDay = "0" + str(yDay)
+        else:
+            yDay = str(yDay)
         path = "pub/data/" + str(year) + "/" + yDay + "/data_1"
             
         for station in stat_noun:    
+            lstRinex = []
             for hour in range(hour_start, hour_end + 1):
               toDownload = station.lower() + str(yDay) + chr(hour + 97) + "." + str(year)[2:4] + "d.Z"
-              #self.downloadFTPIGN(path, toDownload, "../download/")
-              #self.uncompress("../download/" + toDownload)
-              self.uncompressHatanaka("../download/" + toDownload[:-2])
-              self.delete("../download/" + toDownload[:-2])
+              status = self.downloadFTPIGN(path, toDownload, "../download/")
+              if status == 0:
+                  self.uncompress("../download/" + toDownload)
+                  self.uncompressHatanaka("../download/" + toDownload[:-2])
+                  self.delete("../download/" + toDownload[:-2])
+                  lstRinex.append("../download/" + toDownload[:-3] + "o")
+              else:
+                  self.delete("../download/" + toDownload)
+                
+            if len(lstRinex) != 0:
+                self.concatenateRinex(lstRinex, dateTime)
+                
+            #self.launchRNX2RTKPCommand(confFile, dateTime + "_postProcessing_" + station.lower() + ".pos", )
+        
             
-            
-    def concatenateRinex(lstRinex):
+    def concatenateRinex(self, lstRinex, dateTime):
         firstRinex = lstRinex[0]
         lstRinex.pop(0)
-        firstFile = open(firstRinex, "a")
+        firstFile = open(firstRinex, "r")
+        firstLines = firstFile.readlines()
+        firstFile.close()
+        self.delete(firstRinex)
+        
+        newFile = open(firstRinex[:-5] + "_" + dateTime + "." + dateTime[2:4] + "o", "w")
+        newFile.writelines(firstLines)
+        
         lstLines = []
+        
         for rinex in lstRinex:
-            pass
+            file = open(rinex, "r")
+            lines = file.readlines()
+            file.close()
+            self.delete(rinex)
+            #deleting header lines
+            while "END OF HEADER" not in lines[0]:
+                lines.pop(0)
+            lines.pop(0)
+            lstLines.append(lines)
+        
+        for lines in lstLines:
+                newFile.writelines(lines)
+                
+        newFile.close()
             
         
 if __name__ == "__main__":
@@ -472,5 +505,8 @@ if __name__ == "__main__":
     #postPross.downloadFTPIGS("pub/igs/products/2049/", "igv20491_00.sp3.Z", "../download/")
     
     #postPross.launchRNX2RTKPCommand("../conf/test.conf", "../post_processing/test.pos", "../rinex/mobile.o", "../rinex/ct10069z.17o", ["../rinex/ct10069z.17n"], "../download/igs19395.sp3")
+#    lstRinex = ["../download/ixsg049l.19o", "../download/ixsg049m.19o", "../download/ixsg049n.19o"]
+#    postPross.concatenateRinex(lstRinex, "2019-02-18_23-03-42")
     
     postPross.launchPostProcessing("test.conf", 1, 3, 100)
+
