@@ -20,24 +20,24 @@ rad2deg = 1 / deg2rad
 
 class PostProcessModel:
     
-    """
-    Is used to launch a CONVBIN command-line to convert from a .ubx file to rinex files.
-    
-    The rinex files are created in the directory called rinex. They have the same name as the 
-    .ubx file but with a different extensions (.obs, .nav, ...). See RTKlib documentation for
-    further information.
-    
-    Parameters:
-        Mandatory:
-            ubxFile (str): path of the .ubx file
-            posFile (str): path of the last positionning file processed with RTKRCV
-            
-    Return:
-        lat (float): latitude of the receiver
-        lng (float): longitude of the receiver
-        h (float): height above the WGS84 ellipsoid of the receiver  
-    """
     def launchCONVBINCommand(self, ubxFile, posFile):
+        """
+        Is used to launch a CONVBIN command-line to convert from a .ubx file to rinex files.
+        
+        The rinex files are created in the directory called rinex. They have the same name as the 
+        .ubx file but with a different extensions (.obs, .nav, ...). See RTKlib documentation for
+        further information.
+        
+        Parameters:
+            Mandatory:
+                ubxFile (str): path of the .ubx file
+                posFile (str): path of the last positionning file processed with RTKRCV
+                
+        Return:
+            lat (float): latitude of the receiver
+            lng (float): longitude of the receiver
+            h (float): height above the WGS84 ellipsoid of the receiver  
+        """
         file = open(posFile, "r") #opening the position file
         lines = file.readlines() #retrieving all the lines
         file.close()
@@ -80,43 +80,45 @@ class PostProcessModel:
         return lat, lng, h
         
 
-    """
-    Is used to launch a RNX2RTKP command-line to do post-processing.
-    
-    Parameters:
-        Mandatory:
-            confFile (str): path of a RTKlib configuration file
-            outFile (str): path of the out file where the solution will be saved
-            roverObsFile (str): path of the rover observation file
-            baseObsFile (str): path of the base observation file
-            lst_navFile (list): list of paths of navigation files
-            orbitesFile (str): path of an orbites file 
-    """
     def launchRNX2RTKPCommand(self, confFile, outFile, roverObsFile, baseObsFile, lst_navFile, orbitesFile):
+        """
+        Is used to launch a RNX2RTKP command-line to do post-processing.
+        
+        Parameters:
+            Mandatory:
+                confFile (str): path of a RTKlib configuration file
+                outFile (str): path of the out file where the solution will be saved
+                roverObsFile (str): path of the rover observation file
+                baseObsFile (str): path of the base observation file
+                lst_navFile (list): list of paths of navigation files
+                orbitesFile (str): path of an orbites file 
+        """
         cmd = "rnx2rtkp -k " + confFile + " -o " + outFile + " " + roverObsFile + " " + baseObsFile + " "
         for navFile in lst_navFile:
             cmd += navFile + " "
         cmd += orbitesFile
         
+        #print(cmd)
         os.system(cmd) #command-line to do post-processing
     
-    """
-    Is used to download a file from a ftp server. Assumes that the receiver is connected to the Internet.
     
-    Parameters:
-        Mandatory:
-            server (str): name of the ftp server
-            path (str): path of the directory where the file is
-            toDownload (str): name of the file to download
-            downloadPath (str) : path of the directory where the file will be downloaded 
-        Optional:
-            username (str): name of the user (by default 'anonymous')
-            password (str): password of the user (by default '')
-            
-    Return:
-        status (int): -1 if the downloading has failed, 0 if not
-    """
     def downloadFTP(self, server, path, toDownload, downloadPath, username="anonymous", password=""):
+        """
+        Is used to download a file from a ftp server. Assumes that the receiver is connected to the Internet.
+        
+        Parameters:
+            Mandatory:
+                server (str): name of the ftp server
+                path (str): path of the directory where the file is
+                toDownload (str): name of the file to download
+                downloadPath (str) : path of the directory where the file will be downloaded 
+            Optional:
+                username (str): name of the user (by default 'anonymous')
+                password (str): password of the user (by default '')
+                
+        Return:
+            status (int): -1 if the downloading has failed, 0 if not
+        """
         ftp = f.FTP(server) #connection to the ftp server
         log = ftp.login(username, password) #login to the ftp server
         
@@ -139,120 +141,128 @@ class PostProcessModel:
         return status
     
     
-    """
-    Is used to download a file from the IGN ftp server. Assumes that the receiver is connected to the Internet.
-    
-    Parameters:
-        Mandatory:
-            path (str): path of the directory where the file is
-            toDownload (str): name of the file to download
-            downloadPath (str) : path of the directory where the file will be downloaded
-            
-    Return:
-        status (int): -1 if the downloading has failed, 0 if not
-    """
     def downloadFTPIGN(self, path, toDownload, downloadPath):
+        """
+        Is used to download a file from the IGN ftp server. Assumes that the receiver is connected to the Internet.
+        
+        Parameters:
+            Mandatory:
+                path (str): path of the directory where the file is
+                toDownload (str): name of the file to download
+                downloadPath (str) : path of the directory where the file will be downloaded
+                
+        Return:
+            status (int): -1 if the downloading has failed, 0 if not
+        """
         return self.downloadFTP("rgpdata.ign.fr", path, toDownload, downloadPath)
     
 
-    """
-    Is used to download a file from the IGS ftp server. Assumes that the receiver is connected to the Internet.
-    
-    Parameters:
-        Mandatory:
-            path (str): path of the directory where the file is
-            toDownload (str): name of the file to download
-            downloadPath (str) : path of the directory where the file will be downloaded
-            
-    Return:
-        status (int): -1 if the downloading has failed, 0 if not
-    """
+
     def downloadFTPIGS(self, path, toDownload, downloadPath):
+        """
+        Is used to download a file from the IGS ftp server. Assumes that the receiver is connected to the Internet.
+        
+        Parameters:
+            Mandatory:
+                path (str): path of the directory where the file is
+                toDownload (str): name of the file to download
+                downloadPath (str) : path of the directory where the file will be downloaded
+                
+        Return:
+            status (int): -1 if the downloading has failed, 0 if not
+        """
         return self.downloadFTP("igs.ensg.ign.fr", path, toDownload, downloadPath)  
     
     
-    
-    """
-    Is used to download a coordinates' file of permanent GNSS stations. Assumes that the receiver is connected to the Internet.
-    
-    Parameters:
-        Mandatory:
-            url (str): downloading link
-            toDownload (str): name of the file to download
-            downloadPath (str) : path of the directory where the file will be downloaded
-            
-    Return:
-        status (int): -1 if the downloading has failed, 0 if not
-    """
     def downloadCoord(self, url, toDownload, downloadPath):
+        """
+        Is used to download a coordinates' file of permanent GNSS stations. Assumes that the receiver is connected to the Internet.
+        
+        Parameters:
+            Mandatory:
+                url (str): downloading link
+                toDownload (str): name of the file to download
+                downloadPath (str) : path of the directory where the file will be downloaded
+                
+        Return:
+            status (int): -1 if the downloading has failed, 0 if not
+        """
         request = r.get(url) #request to do the downloading
         file = open(downloadPath + toDownload, "w") #file where the file will be downloaded
         file.write(request.text)
         file.close()
     
     
-    """
-    Is used to uncompress a .Z file.
-    
-    Parameters:
-        Mandatory:
-            Zfile (str): name of the .Z file to uncompress
-    """
     def uncompress(self, Zfile):
+        """
+        Is used to uncompress a .Z file.
+        
+        Parameters:
+            Mandatory:
+                Zfile (str): name of the .Z file to uncompress
+        """
         os.system("uncompress " + Zfile) #command-line to process the uncompression
         
       
-    """
-    Is used to uncompress a .d file with the Hatanaka method.
-    
-    Parameters:
-        Mandatory:
-            dfile (str): name of the .d file to uncompress
-    """
     def uncompressHatanaka(self, dFile):
+        """
+        Is used to uncompress a .d file with the Hatanaka method.
+        
+        Parameters:
+            Mandatory:
+                dfile (str): name of the .d file to uncompress
+        """
         os.system("../lib/CRX2RNX " + dFile) #command-line to process the uncompression with CRX2RNX
         
         
     def delete(self, file):
-        os.system("rm " + file)
+        """
+        Is used to delete a file.
+        
+        Parameters:
+            Mandatory:
+                file (str): name of the file to delete
+        """
+        os.system("rm " + file) #command-line to delete the file
         
         
-    """
-    Is used to compute distance with geographic coordinates with Vincenty method.
     
-    Parameters:
-        Mandatory:
-            receiverLng (float): longitude of the receiver (at decimal degree format)
-            receiverLat (float): latitude of the receiver (at decimal degree format)
-            stationLng (float): longitude of the station (at decimal degree format)
-            stationLat (float): latitude of the station (at decimal degree format)
-            
-    Return:
-        dist (float): distance between the receiver and the station
-    """
     def distance(self, receiverLng, receiverLat, stationLng, stationLat):
-        dist = v.vincenty((receiverLat, receiverLng), (stationLat, stationLng))
+        """
+        Is used to compute distance with geographic coordinates with Vincenty method.
+        
+        Parameters:
+            Mandatory:
+                receiverLng (float): longitude of the receiver (at decimal degree format)
+                receiverLat (float): latitude of the receiver (at decimal degree format)
+                stationLng (float): longitude of the station (at decimal degree format)
+                stationLat (float): latitude of the station (at decimal degree format)
+                
+        Return:
+            dist (float): distance between the receiver and the station
+        """
+        dist = v.vincenty((receiverLat, receiverLng), (stationLat, stationLng)) 
         return dist
     
     
-    """
-    Is used to find the nearest permanent GNSS stations with coordinates at dd.mmsssssss format.
-    
-    Parameters:
-        Mandatory:
-            receiverLng (float): longitude of the receiver (at dd format)
-            receiverLat (float): latitude of the receiver (at dd format)
-            coord (str): path of the file with the coordinates of the permanent GNSS stations
-            idLat (int): number of column where latitude is in the coordinates file
-            idLng (int): number of column where longitude is in the coordinates file
-            header (int): number of lines to skip in the header
-            footer (int): number of lines to skip in the footer
-        
-    Return:
-        noun (list): noun of the nearest stations
-        dist (list): distance between the receiver and the nearest stations (in kilometers)
-    """
     def nearestStationsDMS(self, receiverLng, receiverLat, coord, idLat, idLng, header, footer):
+        """
+        Is used to find the nearest permanent GNSS stations with coordinates at dd.mmsssssss format.
+        
+        Parameters:
+            Mandatory:
+                receiverLng (float): longitude of the receiver (at dd format)
+                receiverLat (float): latitude of the receiver (at dd format)
+                coord (str): path of the file with the coordinates of the permanent GNSS stations
+                idLat (int): number of column where latitude is in the coordinates file
+                idLng (int): number of column where longitude is in the coordinates file
+                header (int): number of lines to skip in the header
+                footer (int): number of lines to skip in the footer
+            
+        Return:
+            noun (list): noun of the nearest stations
+            dist (list): distance between the receiver and the nearest stations (in kilometers)
+        """
         listStations = np.genfromtxt(coord, dtype=np.str, skip_header=header, skip_footer=footer)
         lat = listStations[:, idLat]
         lng = listStations[:, idLng]
@@ -273,17 +283,17 @@ class PostProcessModel:
         return noun, dist
     
     
-    """
-    Is used to convert from dd.mmssssss format to dd format.
-    
-    Parameters:
-        Mandatory:
-            dms (float): angle at dd.mmssssss format
-        
-    Return:
-        ret (float): angle at dd format
-    """
     def dms2dd(self, dms):
+        """
+        Is used to convert from dd.mmssssss format to dd format.
+        
+        Parameters:
+            Mandatory:
+                dms (float): angle at dd.mmssssss format
+            
+        Return:
+            ret (float): angle at dd format
+        """
         symbol = 1.0
         if dms < 0:
             symbol = -1.0
@@ -298,20 +308,20 @@ class PostProcessModel:
         return ret
     
     
-    """
-    Is used to go from geographic coordinates in WGS84 to cartesian coordinates in WGS84.
-    Parameters:
-        Mandatory:
-            lat (float): latitude 
-            lng (float): longitude
-            h (float): height above the WGS84 ellipsoid
-            
-    Return:
-        X (float): X coordinate
-        Y (float): Y coordinate
-        Z (float): Z coordinate
-    """
     def geographic2cartesian(self, lat, lng, h):
+        """
+        Is used to go from geographic coordinates in WGS84 to cartesian coordinates in WGS84.
+        Parameters:
+            Mandatory:
+                lat (float): latitude 
+                lng (float): longitude
+                h (float): height above the WGS84 ellipsoid
+                
+        Return:
+            X (float): X coordinate
+            Y (float): Y coordinate
+            Z (float): Z coordinate
+        """
         a = 6378137 #semi-major axis of the WGS84 ellipsoid
         f = 1 / 298.257223563 #flattening 
         b = a - a*f #minor semi-axis
@@ -320,7 +330,7 @@ class PostProcessModel:
         lat *= deg2rad #from degree to radian
         lng *= deg2rad
         
-        w = np.sqrt( 1 - e2 * np.sin(lat) ** 2 ) 
+        w = np.sqrt( 1 - e2 * np.sin(lat) ** 2 ) #temporary values
         N = a / w 
         
         X = (N + h) * np.cos(lng) * np.cos(lat)
@@ -330,27 +340,26 @@ class PostProcessModel:
         return X, Y, Z
     
     
-    """
-    Is used to go from cartesian coordinates in WGS84 to geographic coordinates in WGS84.
-    Parameters:
-        Mandatory:
-            X (float): X coordinate
-            Y (float): Y coordinate
-            Z (float): Z coordinate        
-            
-    Return:
-        lat (float): latitude 
-        lng (float): longitude
-        h (float): height above the WGS84 ellipsoid        
-
-    """
     def cartesian2geographic(self, X, Y, Z):
+        """
+        Is used to go from cartesian coordinates in WGS84 to geographic coordinates in WGS84.
+        Parameters:
+            Mandatory:
+                X (float): X coordinate
+                Y (float): Y coordinate
+                Z (float): Z coordinate        
+                
+        Return:
+            lat (float): latitude 
+            lng (float): longitude
+            h (float): height above the WGS84 ellipsoid        
+        """
         a = 6378137 #semi-major axis of the WGS84 ellipsoid
         f = 1 / 298.257223563 #flattening 
         b = a - a*f #minor semi-axis
         e2 = (a*a - b*b) / (a*a) #exentricity
         
-        r = np.sqrt(X**2 + Y**2 + Z**2)
+        r = np.sqrt(X**2 + Y**2 + Z**2) #temporary values
         mu = np.arctan(Z * (1-f + a*e2/r) / np.sqrt(X**2 + Y**2))
 
         lng = np.arctan(Y/X)
@@ -360,13 +369,22 @@ class PostProcessModel:
         return lng*rad2deg, lat*rad2deg, h
     
     
-    def launchPostProcessing(self, confFile, choosing_mode, stat_max, dist_max):
-        #retrieve last .ubx file
+    def launchPostProcessing(self, confFile, stat_max, dist_max):
+        """
+        Is used to launch the post-processing.
+        
+        Parameters:
+            Mandatory:
+                confFile (str): path of the configuration file used for the post-processing
+                stat_max (int): maximum number of stations used for the post-processing 
+                dist_max (int): maximum distance between the receiver and the stations used for the post-processing
+        """
+        #retrieving last .ubx file
         lst_ubxFiles = glob.glob("../Results/Logs/*")
         lst_ubxFiles.sort()
         last_ubxFile = lst_ubxFiles[-1]
 
-        #retrieve last .pos file
+        #retrieving last .pos file
         lst_posFiles = glob.glob("../Results/Solutions/*") 
         lst_posFiles.sort()
         last_posFile = lst_posFiles[-1]  
@@ -380,48 +398,49 @@ class PostProcessModel:
         #retrieving the nearest stations
         stat_noun, stat_dist = self.nearestStationsDMS(lng, lat, "../download/coordRGP.txt", 4, 5, 31, 3)
         
-        if choosing_mode == 0: #user choose the stations
-            pass
-        else: #user do not choose the stations
-            stat_noun = stat_noun[:stat_max]
-            stat_dist = stat_dist[:stat_max]
-            new_stat_noun = []
-            new_stat_dist = []
-            
-            for i in range(len(stat_noun)):
-                if stat_dist[i] <= dist_max:
-                    new_stat_noun.append(stat_noun[i])
-                    new_stat_dist.append(stat_dist[i])
-                    
-            stat_noun = new_stat_noun
-            stat_dist = new_stat_dist
-            
-        #downloading observation and navigation files of the choosen RGP stations
+        #keeping the maximum number of stations
+        stat_noun = stat_noun[:stat_max]
+        stat_dist = stat_dist[:stat_max]
         
+        #keeping the stations at a distance lower than the maximum distance
+        new_stat_noun = []
+        new_stat_dist = []
+        for i in range(len(stat_noun)):
+            if stat_dist[i] <= dist_max:
+                new_stat_noun.append(stat_noun[i])
+                new_stat_dist.append(stat_dist[i])
+        stat_noun = new_stat_noun
+        stat_dist = new_stat_dist
+            
+        #retrieving the date of the last acquisition
         dateTime = last_ubxFile[-23:-4]
         lst_dateTime = dateTime.split("_")
         
-#        time = lst_dateTime[1]
-#        lst_time = time.split("-")
-#        hour_start = int(lst_time[0])
-        
         date = lst_dateTime[0]
         lst_date = date.split("-")
-        year = int(lst_date[0])
+        year = int(lst_date[0]) 
         mounth = int(lst_date[1])
         day = int(lst_date[2])
         
         DATE = datetime.datetime(year, mounth, day)
         dateTuple = DATE.timetuple()
-        yDay = dateTuple.tm_yday
+        yDay = dateTuple.tm_yday #number of day in the year
         
-        #retrieve last rinex obs file
-        lst_rinexFiles = glob.glob("../rinex/*") 
-        lst_rinexFiles.sort()
-        last_rinexFile = lst_rinexFiles[-1]
+        #retrieving last rover obs file
+        lst_roverFiles = glob.glob("../rinex/*") 
+        lst_roverFiles.sort()
+        dateLast_roverFiles = os.path.splitext(lst_roverFiles[-1])[0]
+        last_roverObsFile = dateLast_roverFiles + ".obs"
         
-        #reading last rinex obs file
-        file = open(last_rinexFile, "r")
+        #retrieving last rover navigation files 
+        lst_navFile = []
+        for roverFile in lst_roverFiles:
+            if os.path.splitext(roverFile)[0] == dateLast_roverFiles and os.path.splitext(roverFile)[1] != ".obs":
+                lst_navFile.append(roverFile)
+        last_roverFile = lst_roverFiles[-1]
+        
+        #reading last rover obs file
+        file = open(last_roverFile, "r")
         lines = file.readlines()
         file.close()
         for line in lines:
@@ -436,36 +455,45 @@ class PostProcessModel:
             yDay = "0" + str(yDay)
         else:
             yDay = str(yDay)
-        path = "pub/data/" + str(year) + "/" + yDay + "/data_1"
+        path = "pub/data/" + str(year) + "/" + yDay + "/data_1" #downloading path
             
+        #downloading observation files of the choosen RGP stations
         for station in stat_noun:    
             lstRinex = []
-            for hour in range(hour_start, hour_end + 1):
-              toDownload = station.lower() + str(yDay) + chr(hour + 97) + "." + str(year)[2:4] + "d.Z"
-              status = self.downloadFTPIGN(path, toDownload, "../download/")
-              if status == 0:
+            for hour in range(hour_start, hour_end + 1): #each hour of the acquisition
+              toDownload = station.lower() + str(yDay) + chr(hour + 97) + "." + str(year)[2:4] + "d.Z" #file to download
+              status = self.downloadFTPIGN(path, toDownload, "../download/") #status of the downloading
+              if status == 0: #succesful downloading
                   self.uncompress("../download/" + toDownload)
                   self.uncompressHatanaka("../download/" + toDownload[:-2])
                   self.delete("../download/" + toDownload[:-2])
                   lstRinex.append("../download/" + toDownload[:-3] + "o")
-              else:
+              else: #unsuccesful downloading
                   self.delete("../download/" + toDownload)
                 
-            if len(lstRinex) != 0:
-                self.concatenateRinex(lstRinex, dateTime)
-                
-            #self.launchRNX2RTKPCommand(confFile, dateTime + "_postProcessing_" + station.lower() + ".pos", )
+            if len(lstRinex) != 0: #rinex files downloaded
+                newRinex = self.concatenateRinex(lstRinex, dateTime)
+                self.launchRNX2RTKPCommand(confFile, "../post_procesing/" + dateTime + "_postProcessing_" + station.lower() + ".pos", last_roverObsFile, newRinex, lst_navFile, "")
+             
         
-            
     def concatenateRinex(self, lstRinex, dateTime):
-        firstRinex = lstRinex[0]
+        """
+        Is used to concatenate hourly rinex files of the same station. The header of the first rinex file will be kept.
+        
+        Parameters:
+            Mandatory:
+                lstRinex (list): list of paths of rinex files to concatenate
+                dateTime (str): date and time of the acquisition at the format yyyy-mm-dd_hh-mm-ss 
+        """
+        firstRinex = lstRinex[0] 
         lstRinex.pop(0)
         firstFile = open(firstRinex, "r")
         firstLines = firstFile.readlines()
         firstFile.close()
         self.delete(firstRinex)
         
-        newFile = open(firstRinex[:-5] + "_" + dateTime + "." + dateTime[2:4] + "o", "w")
+        newRinex = firstRinex[:-5] + "_" + dateTime + "." + dateTime[2:4] + "o"
+        newFile = open(newRinex, "w")
         newFile.writelines(firstLines)
         
         lstLines = []
@@ -486,6 +514,8 @@ class PostProcessModel:
                 
         newFile.close()
             
+        return newRinex
+        
         
 if __name__ == "__main__":
     postPross = PostProcessModel()
@@ -508,5 +538,5 @@ if __name__ == "__main__":
 #    lstRinex = ["../download/ixsg049l.19o", "../download/ixsg049m.19o", "../download/ixsg049n.19o"]
 #    postPross.concatenateRinex(lstRinex, "2019-02-18_23-03-42")
     
-    postPross.launchPostProcessing("test.conf", 1, 3, 100)
+    postPross.launchPostProcessing("test.conf", 3, 100)
 
