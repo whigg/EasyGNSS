@@ -20,7 +20,7 @@
 #  - statut de
 #    stabilité : [     %1s] Le statut de stabilité annuel est un critère de stabilité à long terme (pour de plus amples informations http://rgp.ign.fr/STATIONS/statut_stab.php)
 # 
-# Ces informations sont valides à la date du 12/05/2019.
+# Ces informations sont valides à la date du 13/05/2019.
 # 
 
  SITE       X            Y            Z            lat            lon          he      ha      systeme    statut de
@@ -548,4 +548,4 @@
  YPOR  4130168.186    23140.415  4844107.449   49.441673477    0.191564380   134.175  0.0720     RGF93     B
 
 
-# Fichier créé à partir d'un état de la base de données du RGP au 12/05/2019
+# Fichier créé à partir d'un état de la base de données du RGP au 13/05/2019

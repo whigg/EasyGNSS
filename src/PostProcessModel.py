@@ -75,7 +75,8 @@ class PostProcessModel:
                 x, y, z = self.geographic2cartesian(lat, lng, h)
         
         #launch command-line
-        os.system("convbin -hp " + str(x) + "/" + str(y) + "/" + str(z) + " -hd " + str(hAnt) + "/0/0 -d ../rinex ../Results/Logs/" + ubxFile)
+        print("../RTKLIB/2.4.3/RTKLIB/app/convbin/gcc/convbin -hp " + str(x) + "/" + str(y) + "/" + str(z) + " -hd " + str(hAnt) + "/0/0 -d ../rinex" + ubxFile)
+        os.system("../RTKLIB/2.4.3/RTKLIB/app/convbin/gcc/convbin -hp " + str(x) + "/" + str(y) + "/" + str(z) + " -hd " + str(hAnt) + "/0/0 -d ../rinex" + ubxFile)
         
         return lat, lng, h
         
@@ -93,12 +94,12 @@ class PostProcessModel:
                 lst_navFile (list): list of paths of navigation files
                 orbitesFile (str): path of an orbites file 
         """
-        cmd = "rnx2rtkp -k " + confFile + " -o " + outFile + " " + roverObsFile + " " + baseObsFile + " "
+        cmd = "../RTKLIB/2.4.2/RTKLIB/app/rnx2rtkp/gcc/rnx2rtkp -k " + confFile + " -o " + outFile + " " + roverObsFile + " " + baseObsFile + " "
         for navFile in lst_navFile:
             cmd += navFile + " "
         cmd += orbitesFile
         
-        #print(cmd)
+        print(cmd)
         os.system(cmd) #command-line to do post-processing
     
     
@@ -473,7 +474,7 @@ class PostProcessModel:
                 
             if len(lstRinex) != 0: #rinex files downloaded
                 newRinex = self.concatenateRinex(lstRinex, dateTime)
-                self.launchRNX2RTKPCommand(confFile, "../post_procesing/" + dateTime + "_postProcessing_" + station.lower() + ".pos", last_roverObsFile, newRinex, lst_navFile, "")
+                self.launchRNX2RTKPCommand(confFile, "../post_processing/" + dateTime + "_postProcessing_" + station.lower() + ".pos", last_roverObsFile, newRinex, lst_navFile, "")
              
         
     def concatenateRinex(self, lstRinex, dateTime):
@@ -538,5 +539,5 @@ if __name__ == "__main__":
 #    lstRinex = ["../download/ixsg049l.19o", "../download/ixsg049m.19o", "../download/ixsg049n.19o"]
 #    postPross.concatenateRinex(lstRinex, "2019-02-18_23-03-42")
     
-    postPross.launchPostProcessing("test.conf", 3, 100)
+    postPross.launchPostProcessing("../conf/test.conf", 3, 100)
 
