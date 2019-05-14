@@ -1,5 +1,5 @@
 cd /home/pi/
 mkdir .config/autostart
-mv ./EasyGNSS/install/EasyGNSSpy.desktop ./.config/autostart/
-chmod +x ./.config/autostart/EasyGNSSpy.desktop
+mv ./EasyGNSS/install/EasyGNSS.desktop ./.config/autostart/
+chmod +x ./.config/autostart/EasyGNSS.desktop
 reboot

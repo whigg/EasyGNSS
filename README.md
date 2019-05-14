@@ -60,7 +60,6 @@ It is based on [RTKBase](https://github.com/Francklin2/RTKLIB_Touchscreen_GUI) a
 1. Connect the Raspberry Pi to the internet
 2. Open a terminal
 3. Download Easy GNSS  
-    `$ cd /home/pi`  
     `$ git clone https://github.com/NChebbah/EasyGNSS`
 4. Run install.sh  
     `$ cd EasyGNSS/install`  
@@ -70,7 +69,7 @@ It is based on [RTKBase](https://github.com/Francklin2/RTKLIB_Touchscreen_GUI) a
     `$ sudo sh autostart.sh`
 
 ### How to run Easy GNSS  
-    `$ sudo python /home/pi/EasyGNSS/main.py`
+    `$ sudo python3 /home/pi/EasyGNSS/app/src/main.py`
 
 ## How to use Easy GNSS
   See the User Guide [here](doc/UserGuide.pdf)

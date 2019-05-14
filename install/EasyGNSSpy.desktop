@@ -1,6 +1,0 @@
-[Desktop Entry]
-Name=EasyGNSS
-Type=Application
-Exec=/usr/bin/python3 /home/pi/EasyGNSS/app/main.py
-Terminal=false
-Name[fr_FR]=EasyGNSSpy.desktop

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Easy GNSS
+Exec=sudo python3 /home/pi/EasyGNSS/app/src/main.py
+Terminal=false
+Name[fr_FR]=EasyGNSS.desktop
