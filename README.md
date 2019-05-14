@@ -1,6 +1,6 @@
 # Easy GNSS
 
-![Logo EasyGNSS](src/img/opening.gif)
+![Logo EasyGNSS](app/src/img/opening.gif)
 
 ## Introduction
 Easy GNSS is a Graphical User Interface (GUI) for low-cost GNSS using Raspberry Pi. 
