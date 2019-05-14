@@ -3,7 +3,7 @@
 """
 Created on Thu Apr  4 11:12:09 2019
 
-@author: pc-apple
+@author: nassim
 """
 
 import ftplib as f #library used to interact with a ftp server
@@ -19,6 +19,79 @@ deg2rad = np.pi / 180
 rad2deg = 1 / deg2rad
 
 class PostProcessModel:
+    '''
+    '''
+    
+    def __init__(self):
+        
+        self.__confpath = None
+        self.__ubxpath = None
+        self.__pospath = None
+        self.__mode = 'static'
+        self.__output_format = 'xyz'
+        self.__nb_station = '3'
+        self.__dist_max = '100'
+        
+    
+    def setOptions(self, confpath, ubxpath, pospath, mode, output_format, nb_station, dist_max):
+        '''
+        Sets the options after parameters have been saved in config window
+        '''
+        
+        self.__confpath = confpath
+        self.__ubxpath = ubxpath
+        self.__pospath = pospath
+        self.__mode = mode
+        self.__output_format = output_format
+        self.__nb_station = nb_station
+        self.__dist_max = dist_max
+        
+        
+    def start(self):
+        '''
+        '''
+        self.editConf()
+        self.launchPostProcessing(self.__confpath, self.__nb_station, self.__dist_max)
+        os.remove(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + '/saved_conf/file.conf')
+    
+    def editConf(self):
+        '''
+        create and edit the a new temporary conf file from the selected conf file 
+        this new conf file will be used for the postprocessing
+        '''
+
+        temp_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + '/saved_conf/file.conf'
+        temp_file = open(temp_file_path, 'w')
+        file = open(self.__confpath, 'r')
+
+            
+        # look for the options line in the file
+        for line in file:
+            opt1 = 'pos1-posmode'
+            opt2 = 'out-solformat'
+            if opt1 in line: 
+                #write the line with the new value and by respecting the space
+                line = opt1
+                for i in range(19 - len(opt1)): #in case the program is sensible to length modifications
+                    line += ' ' 
+                line += '=' + self.__mode +'\n'
+                
+            if opt2 in line:
+                #write the line with the new value and by respecting the space
+                line = opt2
+                for i in range(19 - len(opt2)): #in case the program is sensible to length modifications
+                    line += ' ' 
+                line += '=' + self.__output_format +'\n'
+                
+         
+            temp_file.write(line)
+            
+        temp_file.close()
+        file.close()
+        self.__confpath = temp_file_path #this conf file will be used from now  
+
+          
+    
     
     def launchCONVBINCommand(self, ubxFile, posFile):
         """
@@ -31,7 +104,7 @@ class PostProcessModel:
         Parameters:
             Mandatory:
                 ubxFile (str): path of the .ubx file
-                posFile (str): path of the last positionning file processed with RTKRCV
+                posFile (str): path of the positionning file processed with RTKRCV
                 
         Return:
             lat (float): latitude of the receiver
@@ -45,8 +118,14 @@ class PostProcessModel:
         for line in lines:
             if line[0] == "%": #commentary line
                 cpt += 1
-                if "antenna1" in line:
-                    hAnt = float(line[-8:-2]) #height of the antenna in relation to the ground 
+        
+        file = open(self.__confpath, "r") #opening the conf file
+        for line in file:
+            if "ant1-antdelu" in line:
+                line = line.split()
+                line = line[1].replace('=','')
+                hAnt = float(line) #height of the antenna in relation to the ground 
+        file.close()
                 
         data = np.genfromtxt(posFile, skip_header=cpt) #creating a numpy array
         
@@ -73,10 +152,10 @@ class PostProcessModel:
                 lng = data[0, 3]
                 h = data[0, 4]
                 x, y, z = self.geographic2cartesian(lat, lng, h)
-        
+                
+
         #launch command-line
-        print("../RTKLIB/2.4.3/RTKLIB/app/convbin/gcc/convbin -hp " + str(x) + "/" + str(y) + "/" + str(z) + " -hd " + str(hAnt) + "/0/0 -d ../rinex" + ubxFile)
-        os.system("../RTKLIB/2.4.3/RTKLIB/app/convbin/gcc/convbin -hp " + str(x) + "/" + str(y) + "/" + str(z) + " -hd " + str(hAnt) + "/0/0 -d ../rinex" + ubxFile)
+        os.system("../RTKLIB/2.4.3/RTKLIB/app/convbin/gcc/convbin -hp " + str(x) + "/" + str(y) + "/" + str(z) + " -hd " + str(hAnt) + "/0/0 -d ../rinex " + ubxFile)
         
         return lat, lng, h
         
@@ -95,11 +174,11 @@ class PostProcessModel:
                 orbitesFile (str): path of an orbites file 
         """
         cmd = "../RTKLIB/2.4.2/RTKLIB/app/rnx2rtkp/gcc/rnx2rtkp -k " + confFile + " -o " + outFile + " " + roverObsFile + " " + baseObsFile + " "
+
         for navFile in lst_navFile:
             cmd += navFile + " "
         cmd += orbitesFile
         
-        print(cmd)
         os.system(cmd) #command-line to do post-processing
     
     
@@ -380,25 +459,22 @@ class PostProcessModel:
                 stat_max (int): maximum number of stations used for the post-processing 
                 dist_max (int): maximum distance between the receiver and the stations used for the post-processing
         """
-        #retrieving last .ubx file
-        lst_ubxFiles = glob.glob("../Results/Logs/*")
-        lst_ubxFiles.sort()
-        last_ubxFile = lst_ubxFiles[-1]
+        #retrieving .ubx file
+        last_ubxFile = self.__ubxpath
 
-        #retrieving last .pos file
-        lst_posFiles = glob.glob("../Results/Solutions/*") 
-        lst_posFiles.sort()
-        last_posFile = lst_posFiles[-1]  
+        #retrieving .pos file
+        last_posFile = self.__pospath  
         
         #converting from .ubx file to rinex files
         lat, lng, h = self.launchCONVBINCommand(last_ubxFile, last_posFile)
+
         
         #downloading coordinates of the RGP stations
         self.downloadCoord("http://rgp.ign.fr/STATIONS/coordRGP.php", "coordRGP.txt", "../download/")
         
         #retrieving the nearest stations
         stat_noun, stat_dist = self.nearestStationsDMS(lng, lat, "../download/coordRGP.txt", 4, 5, 31, 3)
-        
+
         #keeping the maximum number of stations
         stat_noun = stat_noun[:stat_max]
         stat_dist = stat_dist[:stat_max]
@@ -412,7 +488,7 @@ class PostProcessModel:
                 new_stat_dist.append(stat_dist[i])
         stat_noun = new_stat_noun
         stat_dist = new_stat_dist
-            
+
         #retrieving the date of the last acquisition
         dateTime = last_ubxFile[-23:-4]
         lst_dateTime = dateTime.split("_")
@@ -422,26 +498,30 @@ class PostProcessModel:
         year = int(lst_date[0]) 
         mounth = int(lst_date[1])
         day = int(lst_date[2])
-        
+
         DATE = datetime.datetime(year, mounth, day)
         dateTuple = DATE.timetuple()
         yDay = dateTuple.tm_yday #number of day in the year
         
-        #retrieving last rover obs file
-        lst_roverFiles = glob.glob("../rinex/*") 
-        lst_roverFiles.sort()
-        dateLast_roverFiles = os.path.splitext(lst_roverFiles[-1])[0]
-        last_roverObsFile = dateLast_roverFiles + ".obs"
         
-        #retrieving last rover navigation files 
+#        #retrieving rover obs file       
+        name = os.path.basename(self.__ubxpath)
+        name = os.path.splitext(name)
+
+        rover_file = "../rinex/" + name[0] + ".obs"
+
+#       retrieving rover navigation files 
         lst_navFile = []
-        for roverFile in lst_roverFiles:
-            if os.path.splitext(roverFile)[0] == dateLast_roverFiles and os.path.splitext(roverFile)[1] != ".obs":
-                lst_navFile.append(roverFile)
-        last_roverFile = lst_roverFiles[-1]
+        list_files = glob.glob("../rinex/*" )
+        for i in range(len(list_files)):
+            if os.path.splitext(list_files[i])[-1] != ".obs" :
+                lst_navFile.append(list_files[i])
+        print(lst_navFile)
+
         
-        #reading last rover obs file
-        file = open(last_roverFile, "r")
+        
+        #reading rover obs file
+        file = open(rover_file, "r")
         lines = file.readlines()
         file.close()
         for line in lines:
@@ -449,7 +529,7 @@ class PostProcessModel:
                 hour_end = int(line[22:24])
             elif  "TIME OF FIRST OBS" in line:
                 hour_start = int(line[22:24])
-                
+       
         if len(str(yDay)) == 1:
             yDay = "00" + str(yDay)
         elif len(str(yDay)) == 2:
@@ -457,26 +537,30 @@ class PostProcessModel:
         else:
             yDay = str(yDay)
         path = "pub/data/" + str(year) + "/" + yDay + "/data_1" #downloading path
-            
+
+        
+        
+        
         #downloading observation files of the choosen RGP stations
         for station in stat_noun:    
             lstRinex = []
             for hour in range(hour_start, hour_end + 1): #each hour of the acquisition
               toDownload = station.lower() + str(yDay) + chr(hour + 97) + "." + str(year)[2:4] + "d.Z" #file to download
+              print(toDownload)
               status = self.downloadFTPIGN(path, toDownload, "../download/") #status of the downloading
               if status == 0: #succesful downloading
                   self.uncompress("../download/" + toDownload)
                   self.uncompressHatanaka("../download/" + toDownload[:-2])
-                  self.delete("../download/" + toDownload[:-2])
+                  
                   lstRinex.append("../download/" + toDownload[:-3] + "o")
+                  self.delete("../download/" + toDownload[:-2])
               else: #unsuccesful downloading
                   self.delete("../download/" + toDownload)
                 
             if len(lstRinex) != 0: #rinex files downloaded
                 newRinex = self.concatenateRinex(lstRinex, dateTime)
-                self.launchRNX2RTKPCommand(confFile, "../post_processing/" + dateTime + "_postProcessing_" + station.lower() + ".pos", last_roverObsFile, newRinex, lst_navFile, "")
-             
-        
+                self.launchRNX2RTKPCommand(confFile, "../post_processing/" + dateTime + "_postProcessing_" + station.lower() + ".pos", rover_file, newRinex, lst_navFile, "")
+
     def concatenateRinex(self, lstRinex, dateTime):
         """
         Is used to concatenate hourly rinex files of the same station. The header of the first rinex file will be kept.
@@ -518,26 +602,4 @@ class PostProcessModel:
         return newRinex
         
         
-if __name__ == "__main__":
-    postPross = PostProcessModel()
-    path = "pub/data/2019/093/data_1"
-    toDownload = "agds093p.19d.Z"
-    downloadPath = "../download/"
-    
-#    postPross.downloadFTPIGN(path, toDownload, downloadPath)
-#    postPross.uncompress(downloadPath + toDownload)
-#    postPross.uncompressHatanaka(downloadPath + "agds093p.19d")
-    #postPross.downloadCoord("http://rgp.ign.fr/STATIONS/coordRGP.php", "coordRGP.txt", "../download/")
-    #print(postPross.distance(0, 0, 90,0))
-    #print(postPross.nearestStationsDMS(2.5872222222222225, 48.840833333333336, 10, "../download/coordRGP.txt", 4, 5, 31, 3))
-    #postPross.launchCONVBINCommand("2019-0217-230342.ubx", "../pos/P1_RGP1.pos", 1)
-    #postPross.launchCONVBINCommand("2019-0217-230342.ubx", "../pos/mobile.pos", 1)
-    
-    #postPross.downloadFTPIGS("pub/igs/products/2049/", "igv20491_00.sp3.Z", "../download/")
-    
-    #postPross.launchRNX2RTKPCommand("../conf/test.conf", "../post_processing/test.pos", "../rinex/mobile.o", "../rinex/ct10069z.17o", ["../rinex/ct10069z.17n"], "../download/igs19395.sp3")
-#    lstRinex = ["../download/ixsg049l.19o", "../download/ixsg049m.19o", "../download/ixsg049n.19o"]
-#    postPross.concatenateRinex(lstRinex, "2019-02-18_23-03-42")
-    
-    postPross.launchPostProcessing("../conf/test.conf", 3, 100)
 

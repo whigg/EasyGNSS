@@ -29,7 +29,7 @@ class Chronometer(QLabel):
         self.seconde = 0
         self.minute = 0
         self.hour = 0
-        self.setText("Runnig for: \n 00:00:00")
+        self.setText("Running for: \n 00:00:00")
 
         
     def start(self):
@@ -48,6 +48,14 @@ class Chronometer(QLabel):
         self.seconde+=1
         if self.seconde == 60:
             self.minute+=1
+            self.seconde=0
             if self.minute == 60:
                 self.hour+=1
+                self.minute=0
         self.setText("Runnig for: \n {:02d}:{:02d}:{:02d}".format(self.hour,self.minute,self.seconde))
+        
+    def stop(self):
+        '''
+        Stops the chronometer
+        '''
+        self.timer.stop()

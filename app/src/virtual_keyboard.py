@@ -98,11 +98,11 @@ class VirtualKeyboard(QWidget):
 
 
     def enterEvent(self, event):
-        print ("Mouse Entered")
+
         super(VirtualKeyboard, self).enterEvent(event)
 
     def leaveEvent(self, event):
-        print("Mouse Left")
+
         self.hide()
         
         super(VirtualKeyboard, self).enterEvent(event)
