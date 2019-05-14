@@ -58,13 +58,14 @@ It is based on [RTKBase](https://github.com/Francklin2/RTKLIB_Touchscreen_GUI) a
 
 ### Install Easy GNSS
 1. Connect the Raspberry Pi to the internet
-2. Download Easy GNSS  
+2. Open a terminal
+3. Download Easy GNSS  
     `$ cd /home/pi`  
     `$ git clone https://github.com/NChebbah/EasyGNSS`
-3. Run install.sh  
+4. Run install.sh  
     `$ cd EasyGNSS/install`  
     `$ sudo sh install.sh`
-4. If you want to automatically start Easy GNSS, run autostart.sh  
+5. If you want to automatically start Easy GNSS, run autostart.sh  
     `$ cd /home/pi/EasyGNSS/install`  
     `$ sudo sh autostart.sh`
 
