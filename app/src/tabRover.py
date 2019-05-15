@@ -253,7 +253,7 @@ class TabRover(QWidget):
         if len(rawsol)>34:
             soltypes=re.findall(r'\(.*\)',rawsol)
             print(soltypes)
-            if soltypes != []:
+            try:
                 soltype=soltypes[0][1:-1].strip()
                 sols=re.findall(r'\d*\.\d*',rawsol)
     
@@ -264,6 +264,9 @@ class TabRover(QWidget):
                 self.__lLon.setText(sols[2])
                 self.__lHeight.setText(sols[3])
                 self.__q.setText(sols[4])
+                
+            except Exception as e:
+                print(e)
         
         #stream
         rawstreams=rawstream.split('\n')
