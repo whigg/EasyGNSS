@@ -6,7 +6,7 @@ Created on Mon May 13 15:21:26 2019
 @author: edgar
 """
 
-from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QLabel, QSizePolicy, QDialog
+from PyQt5.QtWidgets import  QVBoxLayout, QLabel, QDialog, QDesktopWidget
 
 class InfoPostProcess(QDialog):
     '''
@@ -23,8 +23,10 @@ class InfoPostProcess(QDialog):
         
         # Inherits from the QDialog class
         super().__init__()
-    
-        self.setGeometry(400,300,200,200)
+        
+        screenShape = QDesktopWidget().screenGeometry()
+        self.setGeometry(int(screenShape.width()*400/1366), int(screenShape.height()*300/768), int(screenShape.width()*400/1366), int(screenShape.height()*400/768))
+
         self.setWindowTitle('Post Processing')
         
         self.label = QLabel('Post Processing in progress' + '\n' + 

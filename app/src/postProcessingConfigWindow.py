@@ -6,7 +6,7 @@ Created on Wed Apr 17 09:50:24 2019
 @author: pc-apple
 """
 
-from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout, QTabWidget, QDialog, QLabel, QSizePolicy
+from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout, QTabWidget, QDialog, QLabel, QSizePolicy, QDesktopWidget
 from PyQt5 import QtCore
 
 from optionPostProcessing import OptionPostProcessing
@@ -32,8 +32,11 @@ class PostProcessingConfigWindow:
         self.__parent = parent
 
         self.__window.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        self.__window.setGeometry(0, 0, 1200, 500)
-        self.__window.setStyleSheet("background-color: rgb(245, 190, 35); font: 25pt 'Helvetica';")
+        screenShape = QDesktopWidget().screenGeometry()
+
+        self.__window.setGeometry(0, 0, int(screenShape.width()*1100/1366), int(screenShape.height()*600/768))
+        string = "background-color: rgb(245, 190, 35); font: 25pt 'Helvetica';"
+        self.__window.setStyleSheet(string)
 
         self.__postProcess_model = None
         
@@ -114,7 +117,8 @@ class PostProcessingConfigWindow:
         '''
 
         d = QDialog()
-        d.setGeometry(400,300,200,200)
+        screenShape = QDesktopWidget().screenGeometry()
+        d.setGeometry(int(screenShape.width()*400/1366), int(screenShape.height()*300/768),int(screenShape.width()*200/1366), int(screenShape.height()*200/768))
         d.setWindowTitle('Parameters')
         
         label = QLabel('Parameters saved')

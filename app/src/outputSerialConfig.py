@@ -52,7 +52,7 @@ class OutputSerialConfig(QWidget):
 
         
         # Possible values for tthe OutputSerial stream configuration
-        self.__output2_flag = False
+        self.__output2_flag = True
         self.__output2_format=(['ubx','rtcm3'])
         self.__output2_port = (['serial0','serial1','ttyACM0','ttyACM1','ttyUSB0','ttyUSB1'])
         self.__output2_bitrate = (['300','600','1200','2400','4800','9600','19200','38400','57600','115200','230400'])

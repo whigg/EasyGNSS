@@ -54,7 +54,7 @@ class BaseModel():
         options.append([True, os.path.abspath(os.path.join(self.__dirtrs, os.pardir)) + '/Results/Logs/'+ time.strftime('%Y-%m-%d %H:%M:%S',time.gmtime()) + '.ubx']) #log
         options.append(['ttyACM0','115200','8','n','1','off']) #input
         options.append([False]) #output1
-        options.append([False,'ubx','ttyUSB0','115200','8','n','1','off'])  #output2      
+        options.append([True,'ubx','ttyUSB0','115200','8','n','1','off'])  #output2      
         
         return options
     

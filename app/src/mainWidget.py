@@ -40,7 +40,8 @@ class MainWidget(QWidget):
         # Inherits from the QWidget class
         super().__init__()
         #Setting style
-        self.setStyleSheet("background-color: rgb(161,183,36); font: 24pt 'Helvetica'; ")
+        string = "background-color: rgb(161,183,36); font: 25pt 'Helvetica';"
+        self.setStyleSheet(string)
 
         
         # Get path to the script

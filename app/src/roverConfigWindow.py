@@ -6,7 +6,7 @@ Created on Thu Apr  4 14:52:22 2019
 @author: edgar
 """
 
-from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout, QTabWidget, QDialog, QSizePolicy, QLabel
+from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout, QTabWidget, QDialog, QSizePolicy, QLabel, QDesktopWidget
 from PyQt5 import QtCore
 from PyQt5.QtGui import QFont
 
@@ -40,10 +40,12 @@ class RoverConfigWindow:
         self.__window = QDialog(parent)
         self.__parent = parent
         
-
         self.__window.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        self.__window.setGeometry(0, 0, 1100, 600)
-        self.__window.setStyleSheet("background-color: rgb(245, 190, 35); font: 25pt 'Helvetica';")
+        screenShape = QDesktopWidget().screenGeometry()
+
+        self.__window.setGeometry(0, 0, int(screenShape.width()*1100/1366), int(screenShape.height()*600/768))
+        string = "background-color: rgb(245, 190, 35); font: 25pt 'Helvetica';"
+        self.__window.setStyleSheet(string)
 
         self.__rover_model = None
         
@@ -150,7 +152,8 @@ class RoverConfigWindow:
         '''
 
         d = QDialog()
-        d.setGeometry(400,300,200,200)
+        screenShape = QDesktopWidget().screenGeometry()
+        d.setGeometry(int(screenShape.width()*400/1366), int(screenShape.height()*300/768),int(screenShape.width()*200/1366), int(screenShape.height()*200/768))
         d.setWindowTitle('Parameters')
         d.setFont(QFont('Helvetica',18))
         

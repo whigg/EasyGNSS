@@ -6,7 +6,7 @@ Created on Thu Apr  4 17:42:52 2019
 @author: edgar
 """
 
-from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout, QTabWidget, QDialog, QLabel, QSizePolicy
+from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout, QTabWidget, QDialog, QDesktopWidget, QLabel, QSizePolicy
 from PyQt5 import QtCore
 from PyQt5.QtGui import QFont
 
@@ -41,8 +41,11 @@ class BaseConfigWindow:
         self.__parent = parent
 
         self.__window.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        self.__window.setGeometry(0, 0, 1000, 500)
-        self.__window.setStyleSheet("background-color: rgb(245, 190, 35); font: 25pt 'Helvetica';")
+        screenShape = QDesktopWidget().screenGeometry()
+
+        self.__window.setGeometry(0, 0, int(screenShape.width()*1100/1366), int(screenShape.height()*600/768))
+        string = "background-color: rgb(245, 190, 35); font: 25pt 'Helvetica';"
+        self.__window.setStyleSheet(string)
 
         self.__base_model = None
         
@@ -139,7 +142,8 @@ class BaseConfigWindow:
         '''
 
         d = QDialog()
-        d.setGeometry(400,300,200,200)
+        screenShape = QDesktopWidget().screenGeometry()
+        d.setGeometry(int(screenShape.width()*400/1366), int(screenShape.height()*300/768),int(screenShape.width()*200/1366), int(screenShape.height()*200/768))
         d.setWindowTitle('Parameters')
         d.setFont(QFont('Helvetica',18))
         
