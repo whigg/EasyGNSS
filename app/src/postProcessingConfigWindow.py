@@ -34,7 +34,7 @@ class PostProcessingConfigWindow:
         self.__window.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         screenShape = QDesktopWidget().screenGeometry()
 
-        self.__window.setGeometry(0, 0, int(screenShape.width()*1100/1366), int(screenShape.height()*600/768))
+        self.__window.setGeometry(0, 0, int(screenShape.width()*1100/1366), int(screenShape.height()*500/768))
         string = "background-color: rgb(245, 190, 35); font: 25pt 'Helvetica';"
         self.__window.setStyleSheet(string)
 
