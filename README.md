@@ -54,7 +54,7 @@ It is based on [RTKBase](https://github.com/Francklin2/RTKLIB_Touchscreen_GUI) a
 
 ## How to install Easy GNSS
 ### Install Raspbian on the Raspberry Pi
-      See [here](https://www.raspberrypi.org/documentation/installation/installing-images/)
+  See [here](https://www.raspberrypi.org/documentation/installation/installing-images/)
 
 ### Install Easy GNSS on the Raspberry Pi
 1. Connect a keyboard and a mouse
@@ -69,7 +69,7 @@ It is based on [RTKBase](https://github.com/Francklin2/RTKLIB_Touchscreen_GUI) a
     `$ cd /home/pi/EasyGNSS/install`  
     `$ sudo sh autostart.sh`
 
-# Connect the screen to the Raspberry Pi
+### Connect the screen to the Raspberry Pi
 1. Go [here](https://github.com/NChebbah/EasyGNSS/tree/master/LCD-show)
 2. Go in the README and find your screen
 3. Note the driver for your screen
