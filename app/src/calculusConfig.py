@@ -44,6 +44,9 @@ class CalculusConfig(QWidget):
     def __init__(self,parent=None):
         super().__init__()
         
+        string = "font: 12pt 'Helvetica';"
+        self.setStyleSheet(string)
+        
         self.__calculus_mode = ['single','dgps','kinematic','static','movingbase','fixed','ppp-kine','ppp-static','ppp-fixed']
         self.__calculus_index_mode = 1
         self.__ant_hgt = '0'
