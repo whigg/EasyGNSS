@@ -100,7 +100,7 @@ class PostProcessingConfigWindow:
         
         if confpath == None or ubxpath == None or pospath == None:
             self.problemApply()
-            pass
+            return
             
         print(confpath, ubxpath, pospath, mode, output_format, nb_station, dist_max)
 
