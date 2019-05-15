@@ -256,13 +256,16 @@ class TabRover(QWidget):
                 
             except Exception as e:
                 print(e)
+                
                 sols=re.findall(r'\d*\.\d*',rawsol)
                 print(sols)
                 
-            
+            try:
                 self.__lLat.setText(sols[1])
                 self.__lLon.setText(sols[2])
                 self.__lHeight.setText(sols[3])
+            except Exception as e:
+                print(e)
                 
             
         
