@@ -46,7 +46,7 @@ class VirtualKeyboard(QWidget):
 
         self.setFocusPolicy(Qt.ClickFocus)
 
-        self.setGeometry(200,550,900,500)
+        self.setGeometry(00,000,400,400)
 
         self.globalLayout = QVBoxLayout(self)
         self.keysLayout = QGridLayout()

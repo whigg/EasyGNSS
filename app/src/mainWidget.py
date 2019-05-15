@@ -58,7 +58,7 @@ class MainWidget(QWidget):
         self.__quit_b.setStyleSheet("background-color: rgb(255, 203, 45);")
         
         # Shutdown Button
-        self.__shutdown_b = QPushButton('Shutdown')
+        self.__shutdown_b = QPushButton('Off')
         self.__shutdown_b.resize(70,49)
         self.__shutdown_b.setMinimumSize(70, 49)
         self.__shutdown_b.clicked.connect(self.shutdown)
@@ -67,7 +67,7 @@ class MainWidget(QWidget):
         # Bannar
         fig=QPixmap(self.__dirtrs +'/img/logo2.png')  
         self.__bannar=QLabel(self)
-        fig = fig.scaledToHeight(70)
+        fig = fig.scaledToHeight(60)
         self.__bannar.setPixmap(fig)
 
         

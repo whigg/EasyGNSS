@@ -27,12 +27,6 @@ class CalculusConfig(QWidget):
             private list eph : type of satellites ephemerids used
             private String elv_mask : elevation mask in degrees
         UI :
-            public QCheckBox gps
-            public QCheckBox glonass
-            public QCheckBox galileo
-            public QCheckBox beidou
-            public QCheckBox qzss
-            public QCheckBox sbas
             private QComboBox calculus_list
             private MyLineEdit ant_hgt_edit
             private QComboBox iono_list
@@ -44,8 +38,6 @@ class CalculusConfig(QWidget):
     def __init__(self,parent=None):
         super().__init__()
         
-        string = "font: 12pt 'Helvetica';"
-        self.setStyleSheet(string)
         
         self.__calculus_mode = ['single','dgps','kinematic','static','movingbase','fixed','ppp-kine','ppp-static','ppp-fixed']
         self.__calculus_index_mode = 1
@@ -60,18 +52,6 @@ class CalculusConfig(QWidget):
         
         
         # Setting the elements on the layout
-        self.gps = QCheckBox("GPS",self)
-        self.gps.setChecked(True)
-        self.glonass = QCheckBox("GLONASS",self)
-        self.glonass.setChecked(False)
-        self.galileo = QCheckBox("GALILEO",self)
-        self.galileo.setChecked(False)
-        self.beidou = QCheckBox("BEIDOU",self)
-        self.beidou.setChecked(False)
-        self.qzss = QCheckBox("QZSS",self)
-        self.qzss.setChecked(False)
-        self.sbas = QCheckBox("SBAS",self)
-        self.sbas.setChecked(False)
         
         self.__calculus_list = QComboBox(self)
         self.__calculus_list.addItems(['SINGLE','DGPS','KINEMATIC','STATIC',
@@ -117,37 +97,10 @@ class CalculusConfig(QWidget):
         grid1.addWidget(self.__elv_mask_edit,5,1)
         
         vbox.addLayout(grid1)
-        vbox.addWidget(QLabel('Satellites System'))
-        
-        grid = QGridLayout()
-        grid.addWidget(self.gps,2,0)
-        grid.addWidget(self.glonass,2,1)
-        grid.addWidget(self.galileo,2,2)
-        grid.addWidget(self.beidou,3,0)
-        grid.addWidget(self.qzss,3,1)
-        grid.addWidget(self.sbas,3,2)
-        vbox.addLayout(grid)      
+              
         self.setLayout(vbox)
         
-    def getSatellites(self):
-        '''
-        Calculates the value corresponding to the satellites systems to be used as implemented in RTKLIB
-        '''
-        number = 0
-        if self.gps.isChecked():
-            number+=1
-        if self.sbas.isChecked():
-            number+=2
-        if self.glonass.isChecked():
-            number+=4
-        if self.galileo.isChecked():
-            number+=8
-        if self.qzss.isChecked():
-            number+=16
-        if self.qzss.isChecked():
-            number+=32
-            
-        return str(number)
+    
     
     
     def apply(self):
@@ -169,7 +122,6 @@ class CalculusConfig(QWidget):
         self.apply()
 
         return (self.__calculus_mode[self.__calculus_index_mode], 
-                self.getSatellites(),
                 self.__ant_hgt,
                 self.__iono[self.__iono_index],
                 self.__tropo[self.__tropo_index],

@@ -17,6 +17,7 @@ from logConfig import LogConfig
 from calculusConfig import CalculusConfig
 from basePosConfig_Rover import BasePosConfig_Rover
 from confConfig import ConfConfig
+from satellitesConfig import SatellitesConfig
 
 
 class RoverConfigWindow:
@@ -43,7 +44,7 @@ class RoverConfigWindow:
         self.__window.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         screenShape = QDesktopWidget().screenGeometry()
 
-        self.__window.setGeometry(0, 0, int(screenShape.width()*1100/1366), int(screenShape.height()*500/768))
+        self.__window.setGeometry(0, 0, int(screenShape.width()*1300/1366), int(screenShape.height()*500/768))
         string = "background-color: rgb(245, 190, 35); font: 25pt 'Helvetica';"
         self.__window.setStyleSheet(string)
 
@@ -56,6 +57,7 @@ class RoverConfigWindow:
 
         self.__tab_conf=ConfConfig()
         self.__tab_calculus=CalculusConfig()
+        self.__tab_satellites = SatellitesConfig()
         self.__tab_input=InputConfig()
         self.__tab_corr=CorrectionConfig()
         self.__tab_sol=SolConfig()
@@ -64,6 +66,7 @@ class RoverConfigWindow:
        
         tabs.addTab(self.__tab_conf,"Conf file")
         tabs.addTab(self.__tab_calculus,"Calculus")
+        tabs.addTab(self.__tab_satellites,"Satellite Constellation")
         tabs.addTab(self.__tab_basepos,"BasePos")
         tabs.addTab(self.__tab_sol,"Solution")
         tabs.addTab(self.__tab_log,"Log")
@@ -120,7 +123,9 @@ class RoverConfigWindow:
         (a, b, c, d) = self.__tab_conf.getOptions()
         options.append([a, b, c, d])
         
-        (a, b, c, d, e, f, g) = self.__tab_calculus.getOptions()
+        (a, c, d, e, f, g) = self.__tab_calculus.getOptions()
+        b = self.__tab_satellites.getOptions()
+        print(a, b, c, d, e, f, g)
         options.append([a, b, c, d, e, f, g])
 
         (a, b, c, d, e, f) = self.__tab_input.getOptions()

@@ -104,15 +104,12 @@ class TabRover(QWidget):
         Lon_.setAlignment(QtCore.Qt.AlignRight)
         Alt_=QLabel('Height:')
         Alt_.setAlignment(QtCore.Qt.AlignRight)
-        Q_=QLabel('Q:')
-        Q_.setAlignment(QtCore.Qt.AlignRight)
         
         # Calculated Position to be modified by updateRover()
         self.__lSol=QLabel('')       
         self.__lLat=QLabel('')      
         self.__lLon=QLabel('')       
         self.__lHeight=QLabel('')
-        self.__q=QLabel('')
         
         # Stream indicators
         status = QLabel('Stream Status:')
@@ -132,8 +129,6 @@ class TabRover(QWidget):
         lower_layout.addWidget(self.__lLon)
         lower_layout.addWidget(Alt_)
         lower_layout.addWidget(self.__lHeight)
-        lower_layout.addWidget(Q_)
-        lower_layout.addWidget(self.__q)
         
         lower_layout2 = QHBoxLayout()
         lower_layout2.addWidget(status)
@@ -253,20 +248,23 @@ class TabRover(QWidget):
         if len(rawsol)>34:
             soltypes=re.findall(r'\(.*\)',rawsol)
             print(soltypes)
+            
             try:
                 soltype=soltypes[0][1:-1].strip()
-                sols=re.findall(r'\d*\.\d*',rawsol)
-    
                 self.__lSol.setText(soltype)
                 self.__lSol.setStyleSheet('font-family: Helvetica; font-size: 25pt')
+                
+            except Exception as e:
+                print(e)
+                sols=re.findall(r'\d*\.\d*',rawsol)
+                print(sols)
+                
             
                 self.__lLat.setText(sols[1])
                 self.__lLon.setText(sols[2])
                 self.__lHeight.setText(sols[3])
-                self.__q.setText(sols[4])
                 
-            except Exception as e:
-                print(e)
+            
         
         #stream
         rawstreams=rawstream.split('\n')
@@ -281,9 +279,9 @@ class TabRover(QWidget):
             if stream.find(' C ')>0:
                 streams=stream.split()
                 if streams[0]=='input':
-                    statstr=statstr+streams[1]+':'+streams[6]+'bps  '
+                    statstr=streams[1]+':'+streams[6]+'bps  '
                 else:
-                    statstr=statstr+streams[0]+':'+streams[8]+'bps  '
+                    statstr=streams[0]+':'+streams[8]+'bps  '
                     
         self.__stream_status.setText(statstr)
         
